@@ -2,189 +2,334 @@
 Local PDF Intelligence • FAISS Retrieval • Ollama Reasoning
 <p align="center"> <img src="https://img.shields.io/badge/Build-Passing-00C853?style=for-the-badge"> <img src="https://img.shields.io/badge/Version-1.0.0-2962FF?style=for-the-badge"> <img src="https://img.shields.io/badge/Framework-Flask-blue?style=for-the-badge"> <img src="https://img.shields.io/badge/Vector_DB-FAISS-orange?style=for-the-badge"> <img src="https://img.shields.io/badge/Embeddings-MiniLM--L6--v2-purple?style=for-the-badge"> <img src="https://img.shields.io/badge/LLM-Ollama_llama3.2-red?style=for-the-badge"> <img src="https://img.shields.io/badge/License-OpenSource-green?style=for-the-badge"> </p>
 <p align="center"></p>
-🌟 What is byteQgennie?
 
-byteQgennie is a local Retrieval-Augmented AI assistant that reads PDFs, converts them into semantic embeddings, stores them in FAISS, and answers user questions with context-aware refinement using Ollama (llama3.2).
+# 🧠 byteQgennie – Local PDF + Ollama Chatbot (FAISS + LangChain)
 
-🔐 Fully local — no cloud calls
+`byteQgennie` is a local Retrieval-Augmented Generation (RAG) chatbot that:
 
-📚 Automatic knowledge ingestion from /data
+- reads your **PDF files** from a folder,
+- builds a **FAISS vector index** using **HuggingFace embeddings**,
+- uses **Ollama (llama3.2)** as the LLM,
+- serves a **Flask web endpoint** that you can call from a frontend or simple HTML chat UI.
 
-⚡ Fast semantic search via FAISS
+It is designed to run **fully locally** (aside from model downloads), with automatic detection of new PDFs and periodic index updates.
 
-🔁 Continuous live update when new PDFs arrive
+---
 
-🤖 Human-like response refinement via local LLM
+## 🚀 What This Project Does (Current Capabilities)
 
-🚀 Current Capabilities
-Feature	Status
-PDF ingestion & chunking	✔ Live
-FAISS vector index caching	✔ Live
-Incremental updates on new PDFs	✔ Live
-llama3.2 refined AI answers	✔ Live
-Web hook /get?msg= response	✔ Live
-Greetings / farewells handling	✔ Live
-Automatic background scanner	✔ Live
-Fully offline RAG processing	✔ Live
-🔧 Tech Stack
-Layer	Technology
-Web Server	Flask
-Vector DB	FAISS
-Embeddings	HuggingFace MiniLM-L6-v2
-LLM	Ollama llama3.2
-Chunking	RecursiveCharacterTextSplitter
-Loader	PyPDFLoader
-Docstore	InMemoryDocstore
-Scheduler	Threading loop
-🧱 Architecture Overview
- PDFs (/data)
-      │
-      ▼
-PyPDFLoader → Chunking → HuggingFace Embeddings → FAISS Index
-                                                      │
-                                                      ▼
-                                           Top-1 Vector Match
-                                                      │
-                                                      ▼
-                                            llama3.2 Response
+Right now, this project is capable of:
 
+- 📄 **Loading PDFs** from the `./data/` folder
+- ✂️ **Splitting text into chunks** using `RecursiveCharacterTextSplitter`
+- 🧬 **Embedding text chunks** using `sentence-transformers/all-MiniLM-L6-v2` via `HuggingFaceEmbeddings`
+- 📚 **Building a FAISS index** for fast similarity search
+- 💾 **Saving and reusing precomputed data**:
+  - `precomputed_data/index.faiss` – FAISS index
+  - `precomputed_data/docs.pkl` – list of LangChain `Document` chunks
+  - `precomputed_data/processed_files.pkl` – names of PDFs already indexed
+- 🔁 **Detecting new PDFs automatically** on startup and in a **background thread** (periodic checks)
+- 🤖 **Answering user questions** using:
+  1. FAISS to find the most relevant chunk  
+  2. `OllamaLLM(model="llama3.2")` to generate a natural, refined answer
+- 👋 Simple **greetings & farewells**:
+  - Responds nicely to “hi”, “hello”, “bye”, etc.
+- 🌐 Exposes endpoints:
+  - `/` – renders `index.html` template (simple chat UI)
+  - `/get` – returns the chatbot response for a `msg` query
 
-✔ No external API
-✔ Offline capable
-✔ Self-learning via new PDFs
+---
 
-📂 Folder Structure
+## 🧱 Tech Stack
+
+### Backend
+
+- **Python**
+- **Flask** – web framework
+- **FAISS** – vector similarity search (via `faiss` + `langchain_community.vectorstores.FAISS`)
+- **LangChain** – for:
+  - `PyPDFLoader` (PDF loading)
+  - `RecursiveCharacterTextSplitter` (chunking)
+  - `Document` type
+  - `InMemoryDocstore`
+- **HuggingFaceEmbeddings**
+  - Model: `sentence-transformers/all-MiniLM-L6-v2`
+- **Ollama LLM**
+  - `OllamaLLM` from `langchain_ollama`
+  - Model: `llama3.2`
+
+### Supporting Libraries
+
+- `numpy` – for numeric arrays used by FAISS
+- `pickle` – for serializing docs + processed file names
+- `threading`, `time`, `os` – standard library for background tasks and file management
+
+---
+
+## 📁 Folder & File Layout
+
+Expected structure:
+
+```text
 byteQgennie/
-├─ app.py
-├─ data/                     # drop PDFs here
-├─ precomputed_data/
+├─ app.py                       # (the file you shared)
+├─ data/                        # <--- Put your PDF files in here
+│   ├─ doc1.pdf
+│   ├─ doc2.pdf
+│   └─ ...
+├─ precomputed_data/            # <--- Generated automatically on first run
 │   ├─ index.faiss
 │   ├─ docs.pkl
 │   └─ processed_files.pkl
 ├─ templates/
-│   └─ index.html
+│   └─ index.html               # Flask HTML template for the chat UI
+├─ requirements.txt             # Python dependencies (see below)
 └─ README.md
+```
 
-⚙️ Setup
-Install system
-git clone https://github.com/byteQ-services/byteQgennie.git
-cd byteQgennie
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+## ⚙️ How It Works (High-Level Flow)
 
-Prepare storage
-mkdir data precomputed_data templates
+### 1. App startup
 
-Install Ollama
-curl https://ollama.ai/install.sh | sh
-ollama pull llama3.2
+- `initialize()` is called.
+- It checks `./data/` for PDF files.
+- If `precomputed_data/index.faiss` and `precomputed_data/docs.pkl` exist → tries to load them.
+- If loading fails or files are missing → regenerates everything from scratch.
 
-Launch
+---
+
+### 2. Initial index creation – `regenerate_data()`
+
+When a full rebuild is needed:
+
+1. Loops through all PDFs in `./data/`.
+2. Uses `PyPDFLoader` to load pages from each PDF.
+3. Concatenates page text and splits it into chunks using `RecursiveCharacterTextSplitter`.
+4. Wraps each chunk into a `Document` object.
+5. Embeds each chunk using `HuggingFaceEmbeddings`.
+6. Creates a FAISS index and adds all embeddings.
+7. Saves precomputed data:
+   - `docs.pkl` → list of `Document` chunks
+   - `processed_files.pkl` → list of file names that were indexed
+   - `index.faiss` → FAISS index on disk
+
+---
+
+### 3. New file detection – `process_new_files()`
+
+For incremental updates without full regeneration:
+
+1. Loads `processed_files.pkl` to know which PDFs are already indexed.
+2. Scans `./data/` for any new `.pdf` files **not** in that list.
+3. For each new PDF:
+   - Loads pages with `PyPDFLoader`.
+   - Creates `Document` objects.
+   - Embeds them and **adds directly** to the existing FAISS index.
+4. Updates:
+   - Global `docs` list.
+   - `InMemoryDocstore`.
+   - `index_to_docstore_id` mapping.
+5. Saves updated:
+   - `docs.pkl`
+   - `processed_files.pkl`
+   - `index.faiss`
+
+---
+
+### 4. Periodic background check – `periodic_check()`
+
+- Runs in a **daemon thread**.
+- Calls `process_new_files()` in an infinite loop.
+- Sleeps `time.sleep(1440)` seconds between checks.
+  - Note: `1440` seconds ≈ 24 minutes (the code comment says “24 hours”; this can be adjusted later).
+
+---
+
+### 5. Handling user queries – `/get` endpoint
+
+1. Reads the user message (`msg`) from:
+   - POST body (`request.form`)
+   - or query parameter (`request.args`)
+2. If the message is a **greeting** → returns a friendly greeting.
+3. If the message is a **farewell** → returns a goodbye message.
+4. Otherwise:
+   - Calls `search_faiss_index(library, question)`:
+     - Embeds the question using `HuggingFaceEmbeddings`.
+     - Searches FAISS for the most similar document chunk (`k = 1`).
+     - Returns the corresponding text chunk.
+   - Calls `refine_answer_with_ollama(ollama_model, context, question)`:
+     - Creates a system-style prompt containing:
+       - **Context**: the retrieved chunk.
+       - **Question**: the user’s question.
+     - Sends this prompt to `OllamaLLM(model="llama3.2")`.
+     - Returns the generated answer string.
+
+---
+
+## 🔌 API Endpoints
+
+### `GET /`
+
+- Renders the `templates/index.html` file.
+- Typically used as the main chat UI page.
+
+---
+
+### `GET /get?msg=your+question`
+
+- **Method:** `GET`
+- **Query parameter:** `msg` – the user’s message.
+- **Returns:** plain text response from the chatbot.
+
+**Example:**
+
+```bash
+curl "http://127.0.0.1:5000/get?msg=what%20is%20in%20these%20documents"
+```
+## POST /get
+
+**Method:** POST  
+**Form field:** `msg` – the user’s message  
+**Content-Type expected:** `application/x-www-form-urlencoded`  
+**Response:** same as GET
+
+**Example:**
+```bash
+curl -X POST -d "msg=hello" http://127.0.0.1:5000/get
+```
+Greetings and Farewells
+Hard-coded lists used for basic conversational handling:
+
+python
+```cmd
+greetings = ["hi", "hello", "hey", "namaste", "hola"]
+farewells = ["bye", "goodbye", "see you", "farewell", "no"]
+```
+
+If the user input (lowercased) matches any greeting, response is:
+
+```css
+Hello! How can I assist you today?
+If it matches any farewell, response is:
+
+Goodbye! Have a great day!
+```
+Requirements
+
+A requirements.txt should include:
+
+arduino
+Copy code
+flask
+faiss-cpu
+numpy
+langchain-community
+langchain-text-splitters
+langchain-core
+langchain-huggingface
+langchain-ollama
+sentence-transformers
+pypdf
+
+Notes:
+sentence-transformers (and torch) may require separate installation depending on environment.
+pypdf is used indirectly by PyPDFLoader.
+
+Install dependencies:
+
+```bash
+       pip install -r requirements.txt
+```
+Installation and Setup
+
+```1. Clone the repository
+        git clone https://github.com/byteQ-services/byteQgennie.git
+        cd byteQgennie
+```
+```2. Create and activate a virtual environment
+        python3 -m venv .venv
+        source .venv/bin/activate      # Linux / macOS
+        # .venv\Scripts\activate       # Windows
+```
+```3. Install dependencies
+        pip install -r requirements.txt
+ ```
+```4. Create required directories
+         mkdir -p data
+         mkdir -p precomputed_data
+         mkdir -p templates
+```
+Place all PDF files inside data/
+
+Ensure templates/index.html exists and posts queries to /get
+
+```5. Install and configure Ollama
+         Install Ollama from official source, then pull model:
+
+```
+```ollama pull llama3.2
+         Run the model to ensure availability:
+
+```
+```ollama run llama3.2
+         Code reference requires exact model name:
+```
+ollama_model = OllamaLLM(model='llama3.2')
+Running the Application
+From the repository root (virtual environment active):
+
 python app.py
+```Default server address:
+         http://127.0.0.1:5000/
+```
+Opening / uses the chat interface via index.html
 
+/get receives and processes user messages
 
-👉 Opens at: http://127.0.0.1:5000/
+Known Limitations
+Single-chunk retrieval (k = 1) may limit contextual depth.
 
-🧠 How Retrieval Works
+Embedding model instance re-created per query; could be optimized by maintaining a persistent instance.
 
-PDFs placed in /data
+Background scan interval is currently ~24 minutes but commented as 24 hours.
 
-Split into 400-character chunks with overlap
+If the data/ directory is empty, initial regeneration may have no content to process.
 
-Embeddings generated & fed into FAISS
+No authentication or rate limiting; not recommended for open public deployment.
 
-Best match (k=1) returned
+No CI pipeline or automated testing currently implemented.
 
-llama3.2 refines context into natural language
+Planned Enhancements
+Retrieval improvements
+Move from k = 1 to multi-chunk aggregation
 
-🔁 Auto Updating
+Include filename and page metadata in responses
 
-New PDFs → detected automatically
+Model prompting
+Add conversation memory
 
-Embedded + appended → index updated
+Add structured prompt role definitions
 
-Saved into:
+Frontend upgrades
+Modern React interface
 
-index.faiss
+Chat bubble UI and loading indicators
 
-docs.pkl
+Configuration
+.env file to contain all model paths, sleep intervals, and embedding configuration
 
-processed_files.pkl
+Monitoring
+Add logging for timing, latency, and prompt statistics
 
-No index rebuild needed.
+Deployment upgrades
+Docker and docker-compose for easy hosting
 
-🔥 API
-/get?msg=your+text
+Multi-model flexibility
+Allow switching between local LLMs and embedding models
 
-Accepts GET & POST
+Author / Maintainers
+Project: byteQgennie
+Organization: byteQ-services
+Purpose: Local retrieval-augmented AI using FAISS, HuggingFace embeddings, and Ollama (llama3.2).
 
-Returns refined answer
-
-Example:
-
-curl "http://127.0.0.1:5000/get?msg=explain chapter 2"
-
-🛠 Known Limitations
-Issue	Detail
-top-1 chunk only	multi-chunk merging planned
-periodic timer set to 1440s	mislabeled as 24h (configurable soon)
-embedding model init per query	will move to persistent instance
-no metadata return (page/file)	upcoming feature
-🛣 Roadmap
-
-v1.5
-
-Multi-chunk context retrieval
-
-Page number + filename in answers
-
-v2.0
-
-Chat UI redesign (React + animations)
-
-Document deletion + re-indexing
-
-v3.0
-
-3D onboarding + memory persona
-
-Multi-model selection (Q4 2025)
-
-🤝 Contributing
-
-Fork → Improve → PR
-Every PR must include:
-
-Clean code comments
-
-One-line summary commit message
-
-Explanation if FAISS/index logic modified
-
-Example commit:
-
-feat: optimized chunk search with k=5 expansion
-
-🆘 Troubleshooting
-Problem	Solution
-FAISS corrupt	delete precomputed_data/ & restart
-model missing	ollama pull llama3.2
-PDFs not reading	ensure OCR / selectable text
-answers irrelevant	increase k or re-embed
-🪪 License
-
-📌 Open Source (MIT recommended / pending addition)
-
-🎯 Final Thoughts
-
-byteQgennie is built to grow daily:
-
-add PDFs → it learns
-
-remove PDFs → re-index upcoming
-
-integrate UI → production-ready
-
-Fully local. Fully controllable.
-Your documents. Your model. Your intelligence.
+Contributions, feature proposals, and issue reports are welcome via GitHub.
