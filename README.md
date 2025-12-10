@@ -1,7 +1,7 @@
 🧠 byteQgennie
 Local PDF Intelligence • FAISS Retrieval • Ollama Reasoning
 <p align="center"> <img src="https://img.shields.io/badge/Build-Passing-00C853?style=for-the-badge"> <img src="https://img.shields.io/badge/Version-1.0.0-2962FF?style=for-the-badge"> <img src="https://img.shields.io/badge/Framework-Flask-blue?style=for-the-badge"> <img src="https://img.shields.io/badge/Vector_DB-FAISS-orange?style=for-the-badge"> <img src="https://img.shields.io/badge/Embeddings-MiniLM--L6--v2-purple?style=for-the-badge"> <img src="https://img.shields.io/badge/LLM-Ollama_llama3.2-red?style=for-the-badge"> <img src="https://img.shields.io/badge/License-OpenSource-green?style=for-the-badge"> </p>
-<p align="center"> <img width="750" src="https://images.unsplash.com/photo-1534751516642-a1af1ef26a56" alt="AI Banner"> </p>
+<p align="center"></p>
 🌟 What is byteQgennie?
 
 byteQgennie is a local Retrieval-Augmented AI assistant that reads PDFs, converts them into semantic embeddings, stores them in FAISS, and answers user questions with context-aware refinement using Ollama (llama3.2).
