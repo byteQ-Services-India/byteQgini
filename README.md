@@ -1,82 +1,190 @@
-# 🧠 byteQgennie – Local PDF + Ollama Chatbot (FAISS + LangChain)
+🧠 byteQgennie
+Local PDF Intelligence • FAISS Retrieval • Ollama Reasoning
+<p align="center"> <img src="https://img.shields.io/badge/Build-Passing-00C853?style=for-the-badge"> <img src="https://img.shields.io/badge/Version-1.0.0-2962FF?style=for-the-badge"> <img src="https://img.shields.io/badge/Framework-Flask-blue?style=for-the-badge"> <img src="https://img.shields.io/badge/Vector_DB-FAISS-orange?style=for-the-badge"> <img src="https://img.shields.io/badge/Embeddings-MiniLM--L6--v2-purple?style=for-the-badge"> <img src="https://img.shields.io/badge/LLM-Ollama_llama3.2-red?style=for-the-badge"> <img src="https://img.shields.io/badge/License-OpenSource-green?style=for-the-badge"> </p>
+<p align="center"> <img width="750" src="https://images.unsplash.com/photo-1534751516642-a1af1ef26a56" alt="AI Banner"> </p>
+🌟 What is byteQgennie?
 
-`byteQgennie` is a local Retrieval-Augmented Generation (RAG) chatbot that:
+byteQgennie is a local Retrieval-Augmented AI assistant that reads PDFs, converts them into semantic embeddings, stores them in FAISS, and answers user questions with context-aware refinement using Ollama (llama3.2).
 
-- reads your **PDF files** from a folder,
-- builds a **FAISS vector index** using **HuggingFace embeddings**,
-- uses **Ollama (llama3.2)** as the LLM,
-- serves a **Flask web endpoint** that you can call from a frontend or simple HTML chat UI.
+🔐 Fully local — no cloud calls
 
-It is designed to run **fully locally** (aside from model downloads), with automatic detection of new PDFs and periodic index updates.
+📚 Automatic knowledge ingestion from /data
 
----
+⚡ Fast semantic search via FAISS
 
-## 🚀 What This Project Does (Current Capabilities)
+🔁 Continuous live update when new PDFs arrive
 
-Right now, this project is capable of:
+🤖 Human-like response refinement via local LLM
 
-- 📄 **Loading PDFs** from the `./data/` folder
-- ✂️ **Splitting text into chunks** using `RecursiveCharacterTextSplitter`
-- 🧬 **Embedding text chunks** using `sentence-transformers/all-MiniLM-L6-v2` via `HuggingFaceEmbeddings`
-- 📚 **Building a FAISS index** for fast similarity search
-- 💾 **Saving and reusing precomputed data**:
-  - `precomputed_data/index.faiss` – FAISS index
-  - `precomputed_data/docs.pkl` – list of LangChain `Document` chunks
-  - `precomputed_data/processed_files.pkl` – names of PDFs already indexed
-- 🔁 **Detecting new PDFs automatically** on startup and in a **background thread** (periodic checks)
-- 🤖 **Answering user questions** using:
-  1. FAISS to find the most relevant chunk  
-  2. `OllamaLLM(model="llama3.2")` to generate a natural, refined answer
-- 👋 Simple **greetings & farewells**:
-  - Responds nicely to “hi”, “hello”, “bye”, etc.
-- 🌐 Exposes endpoints:
-  - `/` – renders `index.html` template (simple chat UI)
-  - `/get` – returns the chatbot response for a `msg` query
+🚀 Current Capabilities
+Feature	Status
+PDF ingestion & chunking	✔ Live
+FAISS vector index caching	✔ Live
+Incremental updates on new PDFs	✔ Live
+llama3.2 refined AI answers	✔ Live
+Web hook /get?msg= response	✔ Live
+Greetings / farewells handling	✔ Live
+Automatic background scanner	✔ Live
+Fully offline RAG processing	✔ Live
+🔧 Tech Stack
+Layer	Technology
+Web Server	Flask
+Vector DB	FAISS
+Embeddings	HuggingFace MiniLM-L6-v2
+LLM	Ollama llama3.2
+Chunking	RecursiveCharacterTextSplitter
+Loader	PyPDFLoader
+Docstore	InMemoryDocstore
+Scheduler	Threading loop
+🧱 Architecture Overview
+ PDFs (/data)
+      │
+      ▼
+PyPDFLoader → Chunking → HuggingFace Embeddings → FAISS Index
+                                                      │
+                                                      ▼
+                                           Top-1 Vector Match
+                                                      │
+                                                      ▼
+                                            llama3.2 Response
 
----
 
-## 🧱 Tech Stack
+✔ No external API
+✔ Offline capable
+✔ Self-learning via new PDFs
 
-### Backend
-
-- **Python**
-- **Flask** – web framework
-- **FAISS** – vector similarity search (via `faiss` + `langchain_community.vectorstores.FAISS`)
-- **LangChain** – for:
-  - `PyPDFLoader` (PDF loading)
-  - `RecursiveCharacterTextSplitter` (chunking)
-  - `Document` type
-  - `InMemoryDocstore`
-- **HuggingFaceEmbeddings**
-  - Model: `sentence-transformers/all-MiniLM-L6-v2`
-- **Ollama LLM**
-  - `OllamaLLM` from `langchain_ollama`
-  - Model: `llama3.2`
-
-### Supporting Libraries
-
-- `numpy` – for numeric arrays used by FAISS
-- `pickle` – for serializing docs + processed file names
-- `threading`, `time`, `os` – standard library for background tasks and file management
-
----
-
-## 📁 Folder & File Layout
-
-Expected structure:
-
-```text
+📂 Folder Structure
 byteQgennie/
-├─ app.py                       # (the file you shared)
-├─ data/                        # <--- Put your PDF files in here
-│   ├─ doc1.pdf
-│   ├─ doc2.pdf
-│   └─ ...
-├─ precomputed_data/            # <--- Generated automatically on first run
+├─ app.py
+├─ data/                     # drop PDFs here
+├─ precomputed_data/
 │   ├─ index.faiss
 │   ├─ docs.pkl
 │   └─ processed_files.pkl
 ├─ templates/
-│   └─ index.html               # Flask HTML template for the chat UI
-├─ requirements.txt             # Python dependencies (see below)
+│   └─ index.html
 └─ README.md
+
+⚙️ Setup
+Install system
+git clone https://github.com/byteQ-services/byteQgennie.git
+cd byteQgennie
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+Prepare storage
+mkdir data precomputed_data templates
+
+Install Ollama
+curl https://ollama.ai/install.sh | sh
+ollama pull llama3.2
+
+Launch
+python app.py
+
+
+👉 Opens at: http://127.0.0.1:5000/
+
+🧠 How Retrieval Works
+
+PDFs placed in /data
+
+Split into 400-character chunks with overlap
+
+Embeddings generated & fed into FAISS
+
+Best match (k=1) returned
+
+llama3.2 refines context into natural language
+
+🔁 Auto Updating
+
+New PDFs → detected automatically
+
+Embedded + appended → index updated
+
+Saved into:
+
+index.faiss
+
+docs.pkl
+
+processed_files.pkl
+
+No index rebuild needed.
+
+🔥 API
+/get?msg=your+text
+
+Accepts GET & POST
+
+Returns refined answer
+
+Example:
+
+curl "http://127.0.0.1:5000/get?msg=explain chapter 2"
+
+🛠 Known Limitations
+Issue	Detail
+top-1 chunk only	multi-chunk merging planned
+periodic timer set to 1440s	mislabeled as 24h (configurable soon)
+embedding model init per query	will move to persistent instance
+no metadata return (page/file)	upcoming feature
+🛣 Roadmap
+
+v1.5
+
+Multi-chunk context retrieval
+
+Page number + filename in answers
+
+v2.0
+
+Chat UI redesign (React + animations)
+
+Document deletion + re-indexing
+
+v3.0
+
+3D onboarding + memory persona
+
+Multi-model selection (Q4 2025)
+
+🤝 Contributing
+
+Fork → Improve → PR
+Every PR must include:
+
+Clean code comments
+
+One-line summary commit message
+
+Explanation if FAISS/index logic modified
+
+Example commit:
+
+feat: optimized chunk search with k=5 expansion
+
+🆘 Troubleshooting
+Problem	Solution
+FAISS corrupt	delete precomputed_data/ & restart
+model missing	ollama pull llama3.2
+PDFs not reading	ensure OCR / selectable text
+answers irrelevant	increase k or re-embed
+🪪 License
+
+📌 Open Source (MIT recommended / pending addition)
+
+🎯 Final Thoughts
+
+byteQgennie is built to grow daily:
+
+add PDFs → it learns
+
+remove PDFs → re-index upcoming
+
+integrate UI → production-ready
+
+Fully local. Fully controllable.
+Your documents. Your model. Your intelligence.
