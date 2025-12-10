@@ -286,50 +286,39 @@ Opening / uses the chat interface via index.html
 
 /get receives and processes user messages
 
-Known Limitations
-Single-chunk retrieval (k = 1) may limit contextual depth.
+##Known Limitations
+      Single-chunk retrieval (k = 1) may limit contextual depth.
+      Embedding model instance re-created per query; could be optimized by maintaining a persistent instance.
+      Background scan interval is currently ~24 minutes but commented as 24 hours.
+      If the data/ directory is empty, initial regeneration may have no content to process.
+      No authentication or rate limiting; not recommended for open public deployment.
+      No CI pipeline or automated testing currently implemented.
 
-Embedding model instance re-created per query; could be optimized by maintaining a persistent instance.
+##Planned Enhancements
+      Retrieval improvements
+      Move from k = 1 to multi-chunk aggregation
+      Include filename and page metadata in responses
+      Model prompting
+      Add conversation memory
+      Add structured prompt role definitions
+      Frontend upgrades
+      Modern React interface
+      Chat bubble UI and loading indicators
+##Configuration
+    .env file to contain all model paths, sleep intervals, and embedding configuration
 
-Background scan interval is currently ~24 minutes but commented as 24 hours.
+##Monitoring
+      Add logging for timing, latency, and prompt statistics
 
-If the data/ directory is empty, initial regeneration may have no content to process.
+##Deployment upgrades
+      Docker and docker-compose for easy hosting
 
-No authentication or rate limiting; not recommended for open public deployment.
+##Multi-model flexibility
+      Allow switching between local LLMs and embedding models
 
-No CI pipeline or automated testing currently implemented.
+##Author / Maintainers
+        Project: byteQgennie
+        Organization: byteQ-services
+        Purpose: Local retrieval-augmented AI using FAISS, HuggingFace embeddings, and Ollama (llama3.2).
 
-Planned Enhancements
-Retrieval improvements
-Move from k = 1 to multi-chunk aggregation
-
-Include filename and page metadata in responses
-
-Model prompting
-Add conversation memory
-
-Add structured prompt role definitions
-
-Frontend upgrades
-Modern React interface
-
-Chat bubble UI and loading indicators
-
-Configuration
-.env file to contain all model paths, sleep intervals, and embedding configuration
-
-Monitoring
-Add logging for timing, latency, and prompt statistics
-
-Deployment upgrades
-Docker and docker-compose for easy hosting
-
-Multi-model flexibility
-Allow switching between local LLMs and embedding models
-
-Author / Maintainers
-Project: byteQgennie
-Organization: byteQ-services
-Purpose: Local retrieval-augmented AI using FAISS, HuggingFace embeddings, and Ollama (llama3.2).
-
-Contributions, feature proposals, and issue reports are welcome via GitHub.
+#Contributions, feature proposals, and issue reports are welcome via GitHub.
